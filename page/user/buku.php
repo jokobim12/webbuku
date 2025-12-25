@@ -1,12 +1,50 @@
 <?php
 session_start();
 
-// Cek Login
-// if (!isset($_SESSION['user_id'])) {
-//     header('Location: ../../auth/login.php');
-//     exit();
-// }
+require_once '../../database/koneksi.php';
 
+// Pagination Setup
+$per_page = 15; // Set items per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $per_page) - $per_page : 0;
+
+// Build Query Conditions
+$conditions = ["books.status = 'published'"];
+
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = mysqli_real_escape_string($koneksi, $_GET['search']);
+    $conditions[] = "(books.title LIKE '%$search%' OR users.name LIKE '%$search%' OR books.genre LIKE '%$search%')";
+}
+
+if (isset($_GET['genre']) && !empty($_GET['genre'])) {
+    $genre_filter = mysqli_real_escape_string($koneksi, $_GET['genre']);
+    $conditions[] = "books.genre LIKE '%$genre_filter%'";
+}
+
+$where_clause = implode(' AND ', $conditions);
+
+// Get Total Count
+$sql_count = "SELECT COUNT(*) as total FROM books 
+              JOIN users ON books.user_id = users.id 
+              WHERE $where_clause";
+$result_count = mysqli_query($koneksi, $sql_count);
+$total_rows = mysqli_fetch_assoc($result_count)['total'];
+$total_pages = ceil($total_rows / $per_page);
+
+// Get Data with Limit
+$sql_query = "SELECT books.*, users.name as author_name 
+            FROM books 
+            JOIN users ON books.user_id = users.id 
+            WHERE $where_clause 
+            ORDER BY books.created_at DESC 
+            LIMIT $start, $per_page";
+
+$result = mysqli_query($koneksi, $sql_query);
+
+if (isset($_GET['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')) {
+    include 'partials/book_grid.php';
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -45,7 +83,7 @@ session_start();
                     <input type="hidden" name="genre" value="<?php echo htmlspecialchars($_GET['genre']); ?>">
                 <?php endif; ?>
                 <input type="text" name="search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>" placeholder="Cari judul, penulis, atau genre..." class="w-full py-4 pl-6 pr-14 rounded-full text-gray-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 shadow-lg">
-                <button type="submit" class="absolute right-3 top-3 bg-emerald-600 p-2 rounded-full text-white hover:bg-emerald-700 transition-colors">
+                <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-emerald-600 p-2.5 rounded-full text-white hover:bg-emerald-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
             </form>
@@ -70,52 +108,6 @@ session_start();
     <!-- Gallery Grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
             <!-- Book Items (From Database) -->
-            <?php
-            require_once '../../database/koneksi.php';
-
-            // Pagination Setup
-            $per_page = 15; // Set items per page
-            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-            $start = ($page > 1) ? ($page * $per_page) - $per_page : 0;
-
-            // Build Query Conditions
-            $conditions = ["books.status = 'published'"];
-            
-            if (isset($_GET['search']) && !empty($_GET['search'])) {
-                $search = mysqli_real_escape_string($koneksi, $_GET['search']);
-                $conditions[] = "(books.title LIKE '%$search%' OR users.name LIKE '%$search%' OR books.genre LIKE '%$search%')";
-            }
-
-            if (isset($_GET['genre']) && !empty($_GET['genre'])) {
-                $genre_filter = mysqli_real_escape_string($koneksi, $_GET['genre']);
-                $conditions[] = "books.genre LIKE '%$genre_filter%'";
-            }
-
-            $where_clause = implode(' AND ', $conditions);
-
-            // Get Total Count
-            $sql_count = "SELECT COUNT(*) as total FROM books 
-                          JOIN users ON books.user_id = users.id 
-                          WHERE $where_clause";
-            $result_count = mysqli_query($koneksi, $sql_count);
-            $total_rows = mysqli_fetch_assoc($result_count)['total'];
-            $total_pages = ceil($total_rows / $per_page);
-
-            // Get Data with Limit
-            $sql_query = "SELECT books.*, users.name as author_name 
-                      FROM books 
-                      JOIN users ON books.user_id = users.id 
-                      WHERE $where_clause 
-                      ORDER BY books.created_at DESC 
-                      LIMIT $start, $per_page";
-            
-            $result = mysqli_query($koneksi, $sql_query);
-
-            if (isset($_GET['ajax'])) {
-                include 'partials/book_grid.php';
-                exit;
-            }
-            ?>
             
             <div id="book-grid-container">
                 <?php include 'partials/book_grid.php'; ?>
@@ -180,10 +172,14 @@ session_start();
             
             try {
                 // Ensure we add ajax=1
-                const fetchUrl = new URL(url, window.location.origin);
+                const fetchUrl = new URL(url, document.baseURI);
                 fetchUrl.searchParams.set('ajax', '1');
 
-                const response = await fetch(fetchUrl);
+                const response = await fetch(fetchUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const html = await response.text();
                 
                 container.innerHTML = html;
