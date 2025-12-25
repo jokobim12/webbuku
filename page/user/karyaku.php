@@ -77,13 +77,15 @@ if (isset($_POST['delete_id'])) {
                     ?>
                     <img src="<?php echo htmlspecialchars($sess_avatar); ?>" alt="Avatar" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
                 </button>
-                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 hidden group-hover:block z-50">
-                    <a href="pengaturan.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg">
-                        Edit Profil
-                    </a>
-                    <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 last:rounded-b-lg">
-                        Keluar
-                    </a>
+                <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                    <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
+                        <a href="pengaturan.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            Edit Profil
+                        </a>
+                        <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                            Keluar
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -139,9 +141,18 @@ if (isset($_POST['delete_id'])) {
                                             <div class="max-w-md">
                                                 <div class="text-sm font-bold text-gray-900 mb-1"><?php echo htmlspecialchars($book['title']); ?></div>
                                                 <div class="text-xs text-gray-500 line-clamp-2"><?php echo htmlspecialchars($book['synopsis']); ?></div>
-                                                <div class="mt-1 text-xs text-emerald-600 font-medium bg-emerald-50 inline-block px-2 py-0.5 rounded-full">
-                                                    <?php echo htmlspecialchars($book['genre']); ?>
-                                                </div>
+                                                    <div class="flex flex-wrap gap-1 mt-1">
+                                                        <?php 
+                                                        $genres = explode(',', $book['genre']);
+                                                        foreach($genres as $g): 
+                                                            $g = trim($g);
+                                                            if(empty($g)) continue;
+                                                        ?>
+                                                        <span class="text-xs text-emerald-600 font-medium bg-emerald-50 inline-block px-2 py-0.5 rounded-full">
+                                                            <?php echo htmlspecialchars($g); ?>
+                                                        </span>
+                                                        <?php endforeach; ?>
+                                                    </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

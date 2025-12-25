@@ -181,10 +181,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="hidden md:block text-sm font-medium text-gray-700"><?php echo htmlspecialchars($_SESSION['name']); ?></span>
                     <img src="<?php echo htmlspecialchars($_SESSION['avatar']); ?>" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
                 </button>
-                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 hidden group-hover:block z-50">
-                    <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 first:rounded-t-lg last:rounded-b-lg">
-                        Keluar
-                    </a>
+                <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                    <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
+                        <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                            Keluar
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -212,17 +214,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- Genre & Cover -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                             <label class="block text-sm font-medium text-gray-700 mb-2">Genre</label>
-                             <select name="genre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white">
-                                 <option value="">Pilih Genre</option>
-                                 <?php
-                                 $genres = ['Fantasi', 'Romantis', 'Horror', 'Sci-Fi', 'Misteri', 'Drama', 'Komedi', 'Petualangan', 'Sejarah', 'Thriller'];
-                                 foreach ($genres as $g) {
-                                     $selected = ($genre == $g) ? 'selected' : '';
-                                     echo "<option value=\"$g\" $selected>$g</option>";
-                                 }
-                                 ?>
-                             </select>
+                             <label class="block text-sm font-medium text-gray-700 mb-2">Genre (bisa lebih dari 1)</label>
+                             <input type="hidden" name="genre" id="genre_input" value="<?php echo htmlspecialchars($genre); ?>" required>
+                             
+                             <div class="relative">
+                                 <!-- Selected Genres Container -->
+                                 <div id="selected_genres_container" class="flex flex-wrap gap-2 mb-3 min-h-[42px] p-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 bg-white cursor-text" onclick="toggleGenreDropdown()">
+                                     <span id="placeholder_text" class="text-gray-400 self-center <?php echo !empty($genre) ? 'hidden' : ''; ?>">Pilih genre...</span>
+                                     <!-- Selected pills will be inserted here via JS -->
+                                 </div>
+
+                                 <!-- Dropdown Menu -->
+                                 <div id="genre_dropdown" class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-xl hidden mt-1 max-h-60 overflow-y-auto">
+                                     <div class="p-2 grid grid-cols-2 gap-2">
+                                         <?php
+                                         $genres = ['Fantasi', 'Romantis', 'Horror', 'Sci-Fi', 'Misteri', 'Drama', 'Komedi', 'Petualangan', 'Sejarah', 'Thriller'];
+                                         foreach ($genres as $g) {
+                                             echo "<button type=\"button\" class=\"genre-option px-3 py-2 text-sm text-left rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center justify-between group\" data-value=\"$g\" onclick=\"toggleGenre('$g', this)\">
+                                                     $g
+                                                     <svg class=\"w-4 h-4 text-emerald-600 opacity-0 group-data-[selected=true]:opacity-100\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 13l4 4L19 7\"></path></svg>
+                                                   </button>";
+                                         }
+                                         ?>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Cover Buku</label>
@@ -373,6 +389,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     cropper.destroy();
                     cropper = null;
                 }
+            }
+
+            // Genre Selection Logic
+            const genreInput = document.getElementById('genre_input');
+            const selectedGenresContainer = document.getElementById('selected_genres_container');
+            const placeholderText = document.getElementById('placeholder_text');
+            const genreDropdown = document.getElementById('genre_dropdown');
+            const genreOptions = document.querySelectorAll('.genre-option');
+
+            // Initialize selected genres from hidden input (comma separated)
+            // Handle possibility of empty string
+            let selectedGenres = genreInput.value ? genreInput.value.split(',').filter(g => g.trim() !== '') : [];
+
+            // Initial Render
+            renderSelectedGenres();
+            updateOptionStates();
+
+            // Toggle Dropdown Visibility
+            window.toggleGenreDropdown = function() {
+                genreDropdown.classList.toggle('hidden');
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                // If click is outside container AND outside dropdown
+                if (!selectedGenresContainer.contains(event.target) && !genreDropdown.contains(event.target)) {
+                    genreDropdown.classList.add('hidden');
+                }
+            });
+
+            // Toggle Selection of a Genre
+            window.toggleGenre = function(genre, btnElement) {
+                const index = selectedGenres.indexOf(genre);
+                if (index > -1) {
+                    // Remove if already selected
+                    selectedGenres.splice(index, 1);
+                } else {
+                    // Add if not selected
+                    selectedGenres.push(genre);
+                }
+                updateHiddenInput();
+                renderSelectedGenres();
+                updateOptionStates();
+            }
+
+            // Remove Genre via Pill Close Button
+            window.removeGenre = function(genre) {
+                const index = selectedGenres.indexOf(genre);
+                if (index > -1) {
+                    selectedGenres.splice(index, 1);
+                    updateHiddenInput();
+                    renderSelectedGenres();
+                    updateOptionStates();
+                }
+            }
+
+            function updateHiddenInput() {
+                genreInput.value = selectedGenres.join(',');
+                if (selectedGenres.length > 0) {
+                    placeholderText.classList.add('hidden');
+                } else {
+                    placeholderText.classList.remove('hidden');
+                }
+            }
+
+            function renderSelectedGenres() {
+                // Remove existing pills (but keep placeholder)
+                const existingPills = selectedGenresContainer.querySelectorAll('.genre-pill');
+                existingPills.forEach(p => p.remove());
+
+                if (selectedGenres.length === 0) {
+                    placeholderText.classList.remove('hidden');
+                } else {
+                    placeholderText.classList.add('hidden');
+                }
+
+                selectedGenres.forEach(genre => {
+                    const pill = document.createElement('span');
+                    pill.className = 'genre-pill inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200';
+                    pill.innerHTML = `
+                        ${genre}
+                        <button type="button" onclick="event.stopPropagation(); removeGenre('${genre}')" class="ml-1.5 text-emerald-600 hover:text-emerald-800 focus:outline-none">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    `;
+                    selectedGenresContainer.appendChild(pill);
+                });
+            }
+
+            function updateOptionStates() {
+                genreOptions.forEach(btn => {
+                    const genre = btn.getAttribute('data-value');
+                    if (selectedGenres.includes(genre)) {
+                        btn.classList.add('bg-emerald-50', 'text-emerald-700');
+                        btn.setAttribute('data-selected', 'true');
+                    } else {
+                        btn.classList.remove('bg-emerald-50', 'text-emerald-700');
+                        btn.removeAttribute('data-selected');
+                    }
+                });
             }
         });
     </script>

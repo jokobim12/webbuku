@@ -83,7 +83,7 @@ session_start();
 
             if (isset($_GET['genre']) && !empty($_GET['genre'])) {
                 $genre_filter = mysqli_real_escape_string($koneksi, $_GET['genre']);
-                $conditions[] = "books.genre = '$genre_filter'";
+                $conditions[] = "books.genre LIKE '%$genre_filter%'";
             }
 
             $sql_query = "SELECT books.*, users.name as author_name 

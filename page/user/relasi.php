@@ -91,10 +91,12 @@ while ($row = mysqli_fetch_assoc($result)) {
                     ?>
                     <img src="<?php echo htmlspecialchars($sess_avatar); ?>" alt="Avatar" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
                 </button>
-                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 hidden group-hover:block z-50">
-                    <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 first:rounded-t-lg last:rounded-b-lg">
-                        Keluar
-                    </a>
+                <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                    <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
+                        <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                            Keluar
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>

@@ -103,7 +103,16 @@ if(isset($_POST['toggle_status'])) {
                 </div>
                 <div class="flex-1 w-full text-center md:text-left">
                     <h2 class="text-2xl font-bold text-gray-900 mb-1"><?php echo htmlspecialchars($book['title']); ?></h2>
-                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium inline-block"><?php echo htmlspecialchars($book['genre']); ?></span>
+                    <div class="flex flex-wrap gap-1 mb-1">
+                        <?php 
+                        $genres = explode(',', $book['genre']);
+                        foreach($genres as $g): 
+                            $g = trim($g);
+                            if(empty($g)) continue;
+                        ?>
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium inline-block"><?php echo htmlspecialchars($g); ?></span>
+                        <?php endforeach; ?>
+                    </div>
                     <p class="text-gray-500 mt-3 text-sm line-clamp-2"><?php echo htmlspecialchars($book['synopsis']); ?></p>
                 </div>
                 <div class="flex flex-col gap-3 w-full md:w-auto">

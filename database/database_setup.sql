@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS books (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    genre VARCHAR(100),
+    genre VARCHAR(255),
     synopsis TEXT,
     content LONGTEXT, -- Deprecated/Optional (Legacy support)
     cover_image VARCHAR(255),

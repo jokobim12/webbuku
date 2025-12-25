@@ -128,7 +128,16 @@ if (isset($_SESSION['user_id'])) {
                 <!-- Book Info - Centered text on mobile, left on desktop -->
                 <div class="flex-1 text-center sm:text-left pb-2">
                     <!-- Genre Badge -->
-                    <span class="inline-block bg-emerald-600 text-white text-xs px-2.5 py-1 rounded font-semibold uppercase tracking-wide mb-3"><?php echo htmlspecialchars($book['genre']); ?></span>
+                    <div class="flex flex-wrap gap-2 mb-3 justify-center sm:justify-start">
+                        <?php 
+                        $genres = explode(',', $book['genre']);
+                        foreach($genres as $g): 
+                            $g = trim($g);
+                            if(empty($g)) continue;
+                        ?>
+                        <span class="inline-block bg-emerald-600/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded font-semibold uppercase tracking-wide"><?php echo htmlspecialchars($g); ?></span>
+                        <?php endforeach; ?>
+                    </div>
                     
                     <!-- Title -->
                     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight"><?php echo htmlspecialchars($book['title']); ?></h1>
