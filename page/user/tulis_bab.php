@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menulis: <?php echo htmlspecialchars($book['title']); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Patrick+Hand&family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
@@ -111,27 +111,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-right: 8px !important;
         }
         
+        /* Auto-indentation for paragraphs */
+        /* Paragraph spacing */
+        .ql-editor p {
+            margin-bottom: 0.75em;
+            line-height: 1.8;
+        }
+
         @media (max-width: 640px) {
             .ql-editor {
-                padding: 1rem;
-                font-size: 1rem; /* Slightly smaller text on mobile */
+                padding: 1.5rem 1rem;
+                font-size: 1.05rem; 
             }
-            /* Condense toolbar on mobile */
+            
+            /* Horizontal Scrollable Toolbar on Mobile */
+            .ql-toolbar.ql-snow {
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                justify-content: flex-start !important;
+                padding: 12px 16px !important;
+                gap: 8px;
+                /* Hide scrollbar */
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+            .ql-toolbar.ql-snow::-webkit-scrollbar {
+                display: none;
+            }
+
             .ql-toolbar.ql-snow .ql-formats {
-                margin-right: 4px !important;
-                margin-bottom: 4px !important; /* Add space when wrapping */
+                display: flex;
+                flex-shrink: 0;
+                margin-right: 12px !important;
+                margin-bottom: 0 !important;
+                padding-right: 12px;
+                border-right: 1px solid #f3f4f6;
             }
+            .ql-toolbar.ql-snow .ql-formats:last-child {
+                border-right: none;
+                margin-right: 0 !important;
+            }
+            
             .ql-snow .ql-picker {
-                height: 24px; /* Compact dropwdown */
-            }
-            .ql-snow .ql-picker-label {
-                padding-left: 4px;
-            }
-            button.ql-bold, button.ql-italic, button.ql-underline, button.ql-strike, button.ql-blockquote {
-                padding: 2px !important;
-                width: 24px !important;
+                height: 28px;
             }
         }
+        /* Font Families for Quill */
+        .ql-font-roboto { font-family: 'Roboto', sans-serif; }
+        .ql-font-merriweather { font-family: 'Merriweather', serif; }
+        .ql-font-patrick-hand { font-family: 'Patrick Hand', cursive; }
+        .ql-font-source-code-pro { font-family: 'Source Code Pro', monospace; }
+
+        /* Dropdown Item Styling */
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="roboto"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before { content: 'Roboto'; font-family: 'Roboto'; }
+
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="merriweather"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="merriweather"]::before { content: 'Merriweather'; font-family: 'Merriweather'; }
+
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="patrick-hand"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="patrick-hand"]::before { content: 'Patrick Hand'; font-family: 'Patrick Hand'; }
+
+        .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="source-code-pro"]::before,
+        .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="source-code-pro"]::before { content: 'Code'; font-family: 'Source Code Pro'; }
     </style>
 </head>
 <body class="bg-gray-50 flex flex-col h-screen overflow-hidden">
@@ -140,21 +183,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="content" id="contentInput">
         
         <!-- Top Navigation Bar -->
-        <header class="bg-white border-b border-gray-200 flex flex-col items-start gap-4 p-4 md:flex-row md:items-center md:justify-between md:h-16 md:px-6 md:py-0 z-20 flex-shrink-0">
-            <div class="flex items-center gap-3 w-full md:w-auto">
-                <a href="kelola_cerita.php?id=<?php echo $book_id; ?>" class="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all flex-shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <!-- Top Navigation Bar -->
+        <header class="bg-white/90 backdrop-blur-md border-b border-gray-100 flex items-center justify-between p-4 sticky top-0 z-50 transition-all">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <a href="kelola_cerita.php?id=<?php echo $book_id; ?>" class="p-2 -ml-2 text-gray-400 hover:text-gray-900 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </a>
-                <div class="flex flex-col w-full">
-                    <input type="text" name="title" value="<?php echo htmlspecialchars($chap_title); ?>" placeholder="Judul Bab..." class="text-lg font-bold text-gray-800 placeholder-gray-300 focus:outline-none bg-transparent w-full md:w-96" required>
-                </div>
+                <input type="text" name="title" value="<?php echo htmlspecialchars($chap_title); ?>" placeholder="Judul Bab..." class="text-lg font-bold text-gray-900 placeholder-gray-300 focus:outline-none bg-transparent w-full truncate border-none focus:ring-0 p-0" required>
             </div>
 
-            <div class="flex items-center justify-end w-full md:w-auto gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
-                <button type="submit" name="status" value="draft" onclick="submitContent()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    Simpan Draft
+            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                <button type="submit" name="status" value="draft" onclick="submitContent()" class="hidden sm:block px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                    Draft
                 </button>
-                <button type="submit" name="status" value="published" onclick="submitContent()" class="px-5 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm transition-colors">
+                <button type="submit" name="status" value="published" onclick="submitContent()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-emerald-300 transition-all transform active:scale-95">
                     Publikasikan
                 </button>
             </div>
@@ -174,10 +216,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <script>
+        // Register Fonts
+        var Font = Quill.import('formats/font');
+        Font.whitelist = ['roboto', 'merriweather', 'patrick-hand', 'source-code-pro'];
+        Quill.register(Font, true);
+
         var quill = new Quill('#editor-container', {
             theme: 'snow',
             modules: {
                 toolbar: [
+                    [{ 'font': ['roboto', 'merriweather', 'patrick-hand', 'source-code-pro'] }],
                     [{ 'header': [1, 2, false] }],
                     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],

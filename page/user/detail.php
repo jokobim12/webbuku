@@ -143,8 +143,7 @@ if (isset($_SESSION['user_id'])) {
                     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight"><?php echo htmlspecialchars($book['title']); ?></h1>
                     
                     <!-- Author -->
-                        oleh <a href="profile.php?id=<?php echo $book['user_id']; ?>" class="text-white font-medium hover:text-emerald-400 transition-colors"><?php echo htmlspecialchars($book['author_name']); ?></a>
-                    </p>
+                    <a href="profile.php?id=<?php echo $book['user_id']; ?>" class="text-white font-medium hover:text-emerald-400 transition-colors"><?php echo htmlspecialchars($book['author_name']); ?></a>
                     
                     <!-- Stats - Simple inline -->
                     <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-sm text-gray-400 mb-5">
