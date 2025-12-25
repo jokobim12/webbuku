@@ -40,8 +40,25 @@ while ($row = mysqli_fetch_assoc($result_chapters)) {
 $first_chapter_id = !empty($chapters) ? $chapters[0]['id'] : null;
 
 // Check Follow Status
+// Check Follow Status, Likes, Bookmarks
 $is_following = false;
 $is_own_book = false;
+$is_liked = false;
+$is_bookmarked = false;
+$like_count = 0;
+
+// Get Like Count
+$like_query = mysqli_query($koneksi, "SELECT COUNT(*) as c FROM likes WHERE book_id = '$book_id'");
+$like_count = mysqli_fetch_assoc($like_query)['c'];
+
+// Get Comments
+$comments_query = "SELECT comments.*, users.name as user_name, users.avatar as user_avatar 
+                   FROM comments 
+                   JOIN users ON comments.user_id = users.id 
+                   WHERE comments.book_id = '$book_id' 
+                   ORDER BY comments.created_at DESC";
+$result_comments = mysqli_query($koneksi, $comments_query);
+
 if (isset($_SESSION['user_id'])) {
     $current_user_id = $_SESSION['user_id'];
     $author_id = $book['user_id'];
@@ -54,6 +71,14 @@ if (isset($_SESSION['user_id'])) {
             $is_following = true;
         }
     }
+
+    // Check Like
+    $check_like = mysqli_query($koneksi, "SELECT id FROM likes WHERE user_id = '$current_user_id' AND book_id = '$book_id'");
+    if (mysqli_num_rows($check_like) > 0) $is_liked = true;
+
+    // Check Bookmark
+    $check_bookmark = mysqli_query($koneksi, "SELECT id FROM bookmarks WHERE user_id = '$current_user_id' AND book_id = '$book_id'");
+    if (mysqli_num_rows($check_bookmark) > 0) $is_bookmarked = true;
 }
 ?>
 <!DOCTYPE html>
@@ -139,27 +164,40 @@ if (isset($_SESSION['user_id'])) {
                         <?php endforeach; ?>
                     </div>
                     
-                    <!-- Title -->
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 leading-tight"><?php echo htmlspecialchars($book['title']); ?></h1>
+                    <!-- Title & Like -->
+                    <div class="flex items-start justify-center sm:justify-start gap-3 mb-2">
+                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight"><?php echo htmlspecialchars($book['title']); ?></h1>
+                        <button id="likeBtn" data-book-id="<?php echo $book_id; ?>" class="mt-1 flex-shrink-0 group relative">
+                            <i class="<?php echo $is_liked ? 'fa-solid text-pink-500' : 'fa-regular text-gray-400'; ?> fa-heart text-2xl sm:text-3xl transition-all duration-300 group-hover:scale-110"></i>
+                            <span id="likeCount" class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-300 font-medium whitespace-nowrap">
+                                <?php echo number_format($like_count); ?>
+                            </span>
+                        </button>
+                    </div>
                     
                     <!-- Author -->
                     <a href="profile.php?id=<?php echo $book['user_id']; ?>" class="text-white font-medium hover:text-emerald-400 transition-colors"><?php echo htmlspecialchars($book['author_name']); ?></a>
                     
                     <!-- Stats - Simple inline -->
                     <div class="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-sm text-gray-400 mb-5">
-                        <span><?php echo number_format($book['views']); ?> dibaca</span>
+                        <span class="flex items-center gap-1"><i class="fa-regular fa-eye"></i> <?php echo number_format($book['views']); ?></span>
                         <span class="hidden sm:inline">•</span>
-                        <span><?php echo count($chapters); ?> bab</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-list-ol"></i> <?php echo count($chapters); ?> Bab</span>
                         <span class="hidden sm:inline">•</span>
                         <span><?php echo date('d M Y', strtotime($book['created_at'])); ?></span>
                     </div>
                     
                     <!-- Action Button -->
                     <?php if($first_chapter_id): ?>
-                    <a href="baca_cerita.php?book_id=<?php echo $book_id; ?>&chapter_id=<?php echo $first_chapter_id; ?>" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
-                        Mulai Baca
-                    </a>
+                    <div class="flex flex-wrap gap-3 justify-center sm:justify-start">
+                        <a href="baca_cerita.php?book_id=<?php echo $book_id; ?>&chapter_id=<?php echo $first_chapter_id; ?>" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-lg shadow-emerald-600/20">
+                            <i class="fa-solid fa-book-open"></i> Mulai Baca
+                        </a>
+                        <button id="bookmarkBtn" data-book-id="<?php echo $book_id; ?>" class="inline-flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm border border-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all">
+                            <i class="<?php echo $is_bookmarked ? 'fa-solid text-emerald-400' : 'fa-regular'; ?> fa-bookmark"></i>
+                            <span><?php echo $is_bookmarked ? 'Disimpan' : 'Simpan'; ?></span>
+                        </button>
+                    </div>
                     <?php else: ?>
                     <button disabled class="inline-flex items-center justify-center gap-2 bg-gray-600 text-gray-400 font-semibold py-2.5 px-5 rounded-lg cursor-not-allowed">
                         Belum Ada Bab
@@ -310,7 +348,126 @@ if (isset($_SESSION['user_id'])) {
                 });
             });
         }
-    </script>
 
+        // Bookmark Logic
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        if(bookmarkBtn) {
+            bookmarkBtn.addEventListener('click', function() {
+                const bookId = this.getAttribute('data-book-id');
+                const icon = this.querySelector('i');
+                const text = this.querySelector('span');
+
+                fetch('../../api/bookmark.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({book_id: bookId})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        if(data.action === 'added') {
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid', 'text-emerald-400');
+                            text.textContent = 'Disimpan';
+                        } else {
+                            icon.classList.remove('fa-solid', 'text-emerald-400');
+                            icon.classList.add('fa-regular');
+                            text.textContent = 'Simpan';
+                        }
+                    } else if(data.message === 'Unauthorized') {
+                        window.location.href = '../../auth/auth_google.php';
+                    }
+                });
+            });
+        }
+
+        // Like Logic
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCount = document.getElementById('likeCount');
+        if(likeBtn) {
+            likeBtn.addEventListener('click', function() {
+                const bookId = this.getAttribute('data-book-id');
+                const icon = this.querySelector('i');
+
+                // Optimistic UI
+                const isLiked = icon.classList.contains('fa-solid');
+                if(isLiked) {
+                    icon.classList.remove('fa-solid', 'text-pink-500');
+                    icon.classList.add('fa-regular', 'text-gray-400');
+                    // likeCount.textContent = parseInt(likeCount.textContent.replace(/,/g, '')) - 1; // Simplify not updating count optimistically
+                } else {
+                    icon.classList.remove('fa-regular', 'text-gray-400');
+                    icon.classList.add('fa-solid', 'text-pink-500');
+                    // likeCount.textContent = parseInt(likeCount.textContent.replace(/,/g, '')) + 1;
+                }
+
+                fetch('../../api/like.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({book_id: bookId})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        likeCount.textContent = data.likes;
+                        if(data.action === 'liked') {
+                            icon.classList.remove('fa-regular', 'text-gray-400');
+                            icon.classList.add('fa-solid', 'text-pink-500');
+                        } else {
+                             icon.classList.remove('fa-solid', 'text-pink-500');
+                            icon.classList.add('fa-regular', 'text-gray-400');
+                        }
+                    } else if(data.message === 'Unauthorized') {
+                         window.location.href = '../../auth/auth_google.php';
+                    }
+                });
+            });
+        }
+
+        // Comment Logic
+        const commentForm = document.getElementById('commentForm');
+        const commentsList = document.getElementById('commentsList');
+
+        if(commentForm) {
+            commentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const content = this.querySelector('textarea').value;
+                const bookId = this.getAttribute('data-book-id');
+                
+                if(!content.trim()) return;
+
+                fetch('../../api/comment.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({book_id: bookId, content: content})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        const c = data.comment;
+                        const html = `
+                            <div class="flex gap-4">
+                                <img src="${c.avatar}" class="w-10 h-10 rounded-full object-cover border border-gray-100">
+                                <div class="flex-1">
+                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl rounded-tl-none p-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="font-bold text-sm text-gray-900 dark:text-gray-100">${c.user_name}</span>
+                                            <span class="text-xs text-gray-500">Baru saja</span>
+                                        </div>
+                                        <p class="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">${c.content}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        commentsList.insertAdjacentHTML('afterbegin', html);
+                        this.reset();
+                    } else if(data.message === 'Unauthorized') {
+                        window.location.href = '../../auth/auth_google.php';
+                    }
+                });
+            });
+        }
+
+    </script>
 </body>
 </html>

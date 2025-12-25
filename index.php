@@ -22,6 +22,9 @@ $count_users = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as c F
 $count_books = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as c FROM books WHERE status='published'"))['c'];
 $sum_views = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT SUM(views) as s FROM books WHERE status='published'"))['s'];
 $sum_views = $sum_views ? $sum_views : 0;
+
+// Reading History removed as requested
+$continue_reading = null;
 ?>
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -30,7 +33,25 @@ $sum_views = $sum_views ? $sum_views : 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebBuku - Buat Cerita Impianmu</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            text: '#f1f5f9'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Poppins', sans-serif; }
         .hero-pattern {
@@ -42,6 +63,10 @@ $sum_views = $sum_views ? $sum_views : 0;
 <body class="bg-gray-50 text-gray-800">
 
    <?php include 'layouts/navbar.php'; ?>
+
+    <!-- Continue Reading Banner -->
+    <!-- Continue Reading Banner removed -->
+
 
     <!-- Hero Section -->
     <section class="relative pt-28 pb-16 lg:pt-48 lg:pb-32 overflow-hidden hero-pattern">
@@ -66,15 +91,15 @@ $sum_views = $sum_views ? $sum_views : 0;
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4 px-4">
                     <?php if($featured_book): ?>
-                        <a href="page/user/detail.php?id=<?php echo $featured_book['id']; ?>" class="bg-gray-900 text-white px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
-                            Baca Sekarang
+                        <a href="page/user/detail.php?id=<?php echo $featured_book['id']; ?>" class="bg-gray-900 text-white px-8 py-3 md:py-4 rounded-xl font-medium text-base md:text-lg hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                            Baca Sekarang <i class="fa-solid fa-book-open ml-2"></i>
                         </a>
                     <?php else: ?>
-                        <a href="page/user/kelola_cerita.php" class="bg-gray-900 text-white px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
-                            Mulai Menulis ✍️
+                        <a href="page/user/kelola_cerita.php" class="bg-gray-900 text-white px-8 py-3 md:py-4 rounded-xl font-medium text-base md:text-lg hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                            Mulai Menulis <i class="fa-solid fa-pen-nib ml-2"></i>
                         </a>
                     <?php endif; ?>
-                    <a href="page/user/buku.php" class="bg-white text-gray-700 border border-gray-200 px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-gray-50 transition-all hover:border-gray-300">
+                    <a href="page/user/buku.php" class="bg-white text-gray-700 border border-gray-200 px-8 py-3 md:py-4 rounded-xl font-medium text-base md:text-lg hover:bg-gray-50 transition-all hover:border-gray-300">
                         Lihat Semua Buku
                     </a>
                 </div>
@@ -91,7 +116,7 @@ $sum_views = $sum_views ? $sum_views : 0;
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <span class="text-emerald-600 font-semibold tracking-wide uppercase text-sm">Sedang Hangat</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Buku Paling Populer Minggu Ini 📚</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Buku Paling Populer Minggu Ini <i class="fa-solid fa-fire text-orange-500 ml-2"></i></h2>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
@@ -139,42 +164,43 @@ $sum_views = $sum_views ? $sum_views : 0;
         </div>
     </section>
 
-    <!-- New Section 1: Explore Categories -->
+    <!-- Section: Explore Categories -->
     <section id="kategori" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center mb-12">
-                <div class="mb-6 md:mb-0">
-                    <h2 class="text-3xl font-bold text-gray-900">Jelajahi Genre Favoritmu 🔍</h2>
+                <div class="mb-6 md:mb-0 text-center md:text-left">
+                    <h2 class="text-3xl font-bold text-gray-900">Jelajahi Genre Favoritmu <i class="fa-solid fa-magnifying-glass text-emerald-600 text-2xl ml-2"></i></h2>
                     <p class="text-gray-500 mt-2">Temukan cerita yang sesuai dengan suasana hatimu</p>
                 </div>
-                <button class="text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-2">
-                    Lihat Semua Genre <span class="text-xl">→</span>
-                </button>
+                <!-- Fixed: Changed button to 'a' tag -->
+                <a href="page/user/buku.php" class="text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-2 transition-colors">
+                    Lihat Semua Genre <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-emerald-200">
-                    <span class="text-4xl mb-3">🏰</span>
+                <a href="page/user/buku.php?genre=Fantasi" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-emerald-200 group">
+                    <i class="fa-solid fa-dragon text-4xl mb-3 text-emerald-600 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Fantasi</span>
                 </a>
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-purple-200">
-                    <span class="text-4xl mb-3">🕵️‍♂️</span>
+                <a href="page/user/buku.php?genre=Misteri" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-purple-200 group">
+                    <i class="fa-solid fa-user-secret text-4xl mb-3 text-purple-600 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Misteri</span>
                 </a>
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-pink-200">
-                    <span class="text-4xl mb-3">💕</span>
+                <a href="page/user/buku.php?genre=Romantis" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-pink-200 group">
+                    <i class="fa-solid fa-heart text-4xl mb-3 text-pink-500 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Romantis</span>
                 </a>
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-red-200">
-                    <span class="text-4xl mb-3">👻</span>
+                <a href="page/user/buku.php?genre=Horror" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-red-200 group">
+                    <i class="fa-solid fa-ghost text-4xl mb-3 text-red-600 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Horror</span>
                 </a>
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-blue-200">
-                    <span class="text-4xl mb-3">🚀</span>
+                <a href="page/user/buku.php?genre=Sci-Fi" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-blue-200 group">
+                    <i class="fa-solid fa-rocket text-4xl mb-3 text-blue-600 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Sci-Fi</span>
                 </a>
-                <a href="#" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-yellow-200">
-                    <span class="text-4xl mb-3">😂</span>
+                <a href="page/user/buku.php?genre=Komedi" class="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer border border-transparent hover:border-yellow-200 group">
+                    <i class="fa-solid fa-face-laugh-squint text-4xl mb-3 text-yellow-500 group-hover:scale-110 transition-transform"></i>
                     <span class="font-medium text-gray-700">Komedi</span>
                 </a>
             </div>
@@ -190,7 +216,7 @@ $sum_views = $sum_views ? $sum_views : 0;
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-12">
             <div class="md:w-1/2 text-center md:text-left">
                 <span class="inline-block py-1 px-3 rounded-full bg-emerald-800 text-emerald-200 text-xs md:text-sm font-semibold mb-6">Komunitas Penulis Bertumbuh</span>
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">Bergabung dengan <?php echo number_format($count_users); ?>+ Penulis Lainnya ✍️</h2>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">Bergabung dengan <?php echo number_format($count_users); ?>+ Penulis Lainnya <i class="fa-solid fa-feather-pointed ml-2"></i></h2>
                 <p class="text-emerald-100 text-base md:text-lg mb-8 leading-relaxed">Jangan menulis sendirian. Gunakan alat penulisan terbaik, pantau statistik pembaca, dan terbitkan karyamu untuk dunia.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                     <a href="dashboard.php" class="bg-white text-emerald-900 py-3 px-8 rounded-full font-bold hover:bg-emerald-50 transition-all shadow-lg text-center">Gabung Sekarang Gratis</a>
@@ -202,24 +228,32 @@ $sum_views = $sum_views ? $sum_views : 0;
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-4 md:mt-8">
                         <div class="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-colors">
-                            <div class="h-10 w-10 bg-blue-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">💡</div>
+                            <div class="h-10 w-10 bg-blue-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
                             <h4 class="text-white font-bold text-sm md:text-base">Editor Canggih</h4>
                             <p class="text-emerald-100 text-[10px] md:text-xs">Tulis ceritamu dengan tools lengkap.</p>
                         </div>
                         <div class="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-colors">
-                            <div class="h-10 w-10 bg-purple-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">📖</div>
+                            <div class="h-10 w-10 bg-purple-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">
+                                <i class="fa-solid fa-book-open-reader"></i>
+                            </div>
                             <h4 class="text-white font-bold text-sm md:text-base">Baca Tanpa Batas</h4>
                             <p class="text-emerald-100 text-[10px] md:text-xs">Akses ribuan cerita gratis.</p>
                         </div>
                     </div>
                     <div class="space-y-4">
                         <div class="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-colors">
-                            <div class="h-10 w-10 bg-pink-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">📊</div>
+                            <div class="h-10 w-10 bg-pink-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
                             <h4 class="text-white font-bold text-sm md:text-base">Statistik Pembaca</h4>
                             <p class="text-emerald-100 text-[10px] md:text-xs">Pantau performa karyamu.</p>
                         </div>
                         <div class="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-colors">
-                            <div class="h-10 w-10 bg-orange-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">🚀</div>
+                            <div class="h-10 w-10 bg-orange-500 rounded-full mb-3 flex items-center justify-center text-white text-xl">
+                                <i class="fa-solid fa-bullhorn"></i>
+                            </div>
                             <h4 class="text-white font-bold text-sm md:text-base">Publikasi Mudah</h4>
                             <p class="text-emerald-100 text-[10px] md:text-xs">Terbitkan karyamu dalam satu klik.</p>
                         </div>
@@ -234,7 +268,7 @@ $sum_views = $sum_views ? $sum_views : 0;
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-emerald-50 rounded-3xl p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-emerald-100">
                 <div class="md:w-2/3 text-center md:text-left">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Statistik WebBuku Saat Ini 📈</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Statistik WebBuku Saat Ini <i class="fa-solid fa-chart-pie text-emerald-600 ml-2"></i></h2>
                     <p class="text-sm md:text-base text-gray-600 mb-0">Platform kami terus tumbuh setiap harinya. Jadilah bagian dari revolusi literasi digital Indonesia.</p>
                 </div>
                 <div class="md:w-1/3 w-full">
