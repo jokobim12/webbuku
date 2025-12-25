@@ -18,9 +18,13 @@ if (empty($name)) {
     exit();
 }
 
-$update_query = "UPDATE users SET name = ?, bio = ? WHERE id = ?";
-$types = "ssi";
-$params = [$name, $bio, $user_id];
+$social_twitter = isset($_POST['social_twitter']) ? trim($_POST['social_twitter']) : '';
+$social_instagram = isset($_POST['social_instagram']) ? trim($_POST['social_instagram']) : '';
+$social_website = isset($_POST['social_website']) ? trim($_POST['social_website']) : '';
+
+$update_query = "UPDATE users SET name = ?, bio = ?, social_twitter = ?, social_instagram = ?, social_website = ? WHERE id = ?";
+$types = "sssssi";
+$params = [$name, $bio, $social_twitter, $social_instagram, $social_website, $user_id];
 
 // Handle Avatar Upload
 if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
@@ -47,9 +51,9 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
     $target_file = $target_dir . $filename;
 
     if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target_file)) {
-        $update_query = "UPDATE users SET name = ?, bio = ?, avatar = ? WHERE id = ?";
-        $types = "sssi";
-        $params = [$name, $bio, $db_path, $user_id];
+        $update_query = "UPDATE users SET name = ?, bio = ?, avatar = ?, social_twitter = ?, social_instagram = ?, social_website = ? WHERE id = ?";
+        $types = "ssssssi";
+        $params = [$name, $bio, $db_path, $social_twitter, $social_instagram, $social_website, $user_id];
         
         // Update session avatar
         $_SESSION['avatar'] = $db_path;

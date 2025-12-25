@@ -28,6 +28,15 @@ if ($method === 'POST') {
     
     if($stmt->execute()) {
         $comment_id = $stmt->insert_id;
+
+        // Notification: Notify book author
+        $book_query = mysqli_query($koneksi, "SELECT user_id FROM books WHERE id = $book_id");
+        if ($book_row = mysqli_fetch_assoc($book_query)) {
+            $owner_id = $book_row['user_id'];
+            if ($owner_id != $user_id) {
+                mysqli_query($koneksi, "INSERT INTO notifications (user_id, type, actor_id, reference_id) VALUES ($owner_id, 'comment', $user_id, $book_id)");
+            }
+        }
         // Return new comment data for UI appending
         $new_comment = [
             'id' => $comment_id,

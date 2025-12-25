@@ -53,8 +53,10 @@ if (isset($_GET['code'])) {
         $avatar = $google_user['picture'];
 
         // Cek user ada atau tidak
-        $check_sql = "SELECT * FROM users WHERE google_id = '$google_id'";
-        $result = mysqli_query($koneksi, $check_sql);
+        $stmt = mysqli_prepare($koneksi, "SELECT * FROM users WHERE google_id = ?");
+        mysqli_stmt_bind_param($stmt, "s", $google_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
         if (mysqli_num_rows($result) > 0) {
             // User lama
@@ -65,8 +67,10 @@ if (isset($_GET['code'])) {
             $_SESSION['avatar'] = $user_data['avatar'];
         } else {
             // User baru
-            $insert_sql = "INSERT INTO users (google_id, name, email, avatar, role) VALUES ('$google_id', '$name', '$email', '$avatar', 'free')";
-            if (mysqli_query($koneksi, $insert_sql)) {
+            $stmt = mysqli_prepare($koneksi, "INSERT INTO users (google_id, name, email, avatar, role) VALUES (?, ?, ?, ?, 'free')");
+            mysqli_stmt_bind_param($stmt, "ssss", $google_id, $name, $email, $avatar);
+            
+            if (mysqli_stmt_execute($stmt)) {
                 $_SESSION['user_id'] = mysqli_insert_id($koneksi);
                 $_SESSION['role'] = 'free';
                 $_SESSION['name'] = $name;

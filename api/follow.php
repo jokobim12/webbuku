@@ -53,6 +53,9 @@ if ($is_following) {
     $stmt = mysqli_prepare($koneksi, $insert_query);
     mysqli_stmt_bind_param($stmt, "ii", $follower_id, $following_id);
     if (mysqli_stmt_execute($stmt)) {
+        // Notification
+        mysqli_query($koneksi, "INSERT INTO notifications (user_id, type, actor_id) VALUES ($following_id, 'follow', $follower_id)");
+
         echo json_encode(['status' => 'success', 'is_following' => true, 'message' => 'Berhasil mengikuti.']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Gagal memproses permintaan.']);
