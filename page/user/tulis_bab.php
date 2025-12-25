@@ -100,6 +100,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .ql-container.ql-snow {
             border: none;
         }
+        /* Custom Toolbar Styling */
+        .ql-toolbar.ql-snow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Center items on mobile */
+            padding: 8px !important;
+        }
+        .ql-toolbar.ql-snow .ql-formats {
+            margin-right: 8px !important;
+        }
+        
+        @media (max-width: 640px) {
+            .ql-editor {
+                padding: 1rem;
+                font-size: 1rem; /* Slightly smaller text on mobile */
+            }
+            /* Condense toolbar on mobile */
+            .ql-toolbar.ql-snow .ql-formats {
+                margin-right: 4px !important;
+                margin-bottom: 4px !important; /* Add space when wrapping */
+            }
+            .ql-snow .ql-picker {
+                height: 24px; /* Compact dropwdown */
+            }
+            .ql-snow .ql-picker-label {
+                padding-left: 4px;
+            }
+            button.ql-bold, button.ql-italic, button.ql-underline, button.ql-strike, button.ql-blockquote {
+                padding: 2px !important;
+                width: 24px !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 flex flex-col h-screen overflow-hidden">
@@ -108,22 +140,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="content" id="contentInput">
         
         <!-- Top Navigation Bar -->
-        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 z-20 flex-shrink-0">
-            <div class="flex items-center gap-4">
-                <a href="kelola_cerita.php?id=<?php echo $book_id; ?>" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <header class="bg-white border-b border-gray-200 flex flex-col items-start gap-4 p-4 md:flex-row md:items-center md:justify-between md:h-16 md:px-6 md:py-0 z-20 flex-shrink-0">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <a href="kelola_cerita.php?id=<?php echo $book_id; ?>" class="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all flex-shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </a>
-                <div class="flex flex-col">
-                    <span class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Menulis Bagian</span>
-                    <input type="text" name="title" value="<?php echo htmlspecialchars($chap_title); ?>" placeholder="Judul Bagian (Contoh: Bab 1)" class="font-bold text-gray-800 placeholder-gray-300 focus:outline-none bg-transparent w-64 md:w-96" required>
+                <div class="flex flex-col w-full">
+                    <input type="text" name="title" value="<?php echo htmlspecialchars($chap_title); ?>" placeholder="Judul Bab..." class="text-lg font-bold text-gray-800 placeholder-gray-300 focus:outline-none bg-transparent w-full md:w-96" required>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button type="submit" name="status" value="draft" onclick="submitContent()" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+            <div class="flex items-center justify-end w-full md:w-auto gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+                <button type="submit" name="status" value="draft" onclick="submitContent()" class="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     Simpan Draft
                 </button>
-                <button type="submit" name="status" value="published" onclick="submitContent()" class="px-5 py-2 bg-emerald-600 text-white rounded-full text-sm font-bold hover:bg-emerald-700 shadow-sm transition-colors">
+                <button type="submit" name="status" value="published" onclick="submitContent()" class="px-5 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm transition-colors">
                     Publikasikan
                 </button>
             </div>

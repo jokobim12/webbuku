@@ -3,6 +3,11 @@ session_start();
 
 require_once '../../database/koneksi.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../../auth/login.php');
+    exit();
+}
+
 if (!isset($_GET['id'])) {
     header('Location: buku.php');
     exit();

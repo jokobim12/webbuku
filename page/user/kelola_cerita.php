@@ -68,28 +68,17 @@ if(isset($_POST['toggle_status'])) {
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased font-sans">
     
-    <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-30" id="sidebar">
-        <div class="h-16 flex items-center px-6 border-b border-gray-100">
-             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                </div>
-                <span class="text-xl font-bold text-gray-900 tracking-tight">WebBuku</span>
-            </div>
-        </div>
-         <nav class="p-4 space-y-1">
-            <a href="karyaku.php" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg font-medium transition-colors">
-                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Kembali ke Karyaku
-            </a>
-         </nav>
-    </aside>
+    <!-- Sidebar Removed as per user request -->
 
-    <div class="md:ml-64 min-h-screen flex flex-col">
+    <div class="min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8">
+        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-4">
+                <a href="karyaku.php" class="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg group transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span class="hidden sm:inline font-medium">Kembali</span>
+                </a>
+                <div class="h-6 w-px bg-gray-200 mx-2"></div>
                 <h1 class="text-lg font-semibold text-gray-800">Daftar Isi</h1>
                 <span class="px-2 py-0.5 <?php echo $book['status'] == 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'; ?> rounded-full text-xs font-bold uppercase tracking-wide">
                     <?php echo htmlspecialchars($book['status']); ?>
@@ -104,7 +93,7 @@ if(isset($_POST['toggle_status'])) {
         <main class="flex-1 p-8">
             
             <!-- Book Info Card -->
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
                 <div class="w-24 h-36 bg-gray-200 rounded flex-shrink-0 overflow-hidden relative">
                      <?php if($book['cover_image']): ?>
                         <img src="../../<?php echo htmlspecialchars($book['cover_image']); ?>" class="w-full h-full object-cover">
@@ -112,13 +101,18 @@ if(isset($_POST['toggle_status'])) {
                         <div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 font-bold">PDF</div>
                      <?php endif; ?>
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 w-full text-center md:text-left">
                     <h2 class="text-2xl font-bold text-gray-900 mb-1"><?php echo htmlspecialchars($book['title']); ?></h2>
-                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium"><?php echo htmlspecialchars($book['genre']); ?></span>
+                    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium inline-block"><?php echo htmlspecialchars($book['genre']); ?></span>
                     <p class="text-gray-500 mt-3 text-sm line-clamp-2"><?php echo htmlspecialchars($book['synopsis']); ?></p>
                 </div>
-                <div class="flex flex-col gap-2">
-                     <a href="tulis_bab.php?book_id=<?php echo $book['id']; ?>" class="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-md transition-colors inline-flex items-center justify-center gap-2">
+                <div class="flex flex-col gap-3 w-full md:w-auto">
+                    <a href="tulis_cerita.php?id=<?php echo $book['id']; ?>" class="w-full md:w-auto px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 shadow-sm transition-colors inline-flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Edit Info Cerita
+                    </a>
+
+                     <a href="tulis_bab.php?book_id=<?php echo $book['id']; ?>" class="w-full md:w-auto px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 shadow-md transition-colors inline-flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         Tambah Bagian Baru
                     </a>
