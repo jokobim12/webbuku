@@ -1,35 +1,30 @@
 <?php
 session_start();
-require_once '../../database/koneksi.php';
+require_once '../database/koneksi.php';
 
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Silakan login terlebih dahulu.']);
+    echo json_encode(['status' => 'error', 'message' => 'Silakan login terlebih dahulu.']);
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid method']);
     exit();
 }
 
+$input = json_decode(file_get_contents('php://input'), true);
+$following_id = isset($input['following_id']) ? intval($input['following_id']) : 0;
 $follower_id = $_SESSION['user_id'];
-$following_id = isset($_POST['following_id']) ? intval($_POST['following_id']) : 0;
 
 if ($following_id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID.']);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid user ID.']);
     exit();
 }
 
 if ($follower_id == $following_id) {
-    echo json_encode(['success' => false, 'message' => 'Anda tidak bisa mengikuti diri sendiri.']);
-    exit();
-}
-
-// Check connection
-if (!$koneksi) {
-    echo json_encode(['success' => false, 'message' => 'Database connection failed.']);
+    echo json_encode(['status' => 'error', 'message' => 'Anda tidak bisa mengikuti diri sendiri.']);
     exit();
 }
 
@@ -48,9 +43,9 @@ if ($is_following) {
     $stmt = mysqli_prepare($koneksi, $delete_query);
     mysqli_stmt_bind_param($stmt, "ii", $follower_id, $following_id);
     if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(['success' => true, 'is_following' => false, 'message' => 'Berhasil berhenti mengikuti.']);
+        echo json_encode(['status' => 'success', 'is_following' => false, 'message' => 'Berhasil berhenti mengikuti.']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Gagal memproses permintaan.']);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal memproses permintaan.']);
     }
 } else {
     // Follow
@@ -58,12 +53,9 @@ if ($is_following) {
     $stmt = mysqli_prepare($koneksi, $insert_query);
     mysqli_stmt_bind_param($stmt, "ii", $follower_id, $following_id);
     if (mysqli_stmt_execute($stmt)) {
-        echo json_encode(['success' => true, 'is_following' => true, 'message' => 'Berhasil mengikuti.']);
+        echo json_encode(['status' => 'success', 'is_following' => true, 'message' => 'Berhasil mengikuti.']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Gagal memproses permintaan.']);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal memproses permintaan.']);
     }
 }
-
-mysqli_stmt_close($stmt);
-mysqli_close($koneksi);
 ?>

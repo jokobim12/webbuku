@@ -33,6 +33,7 @@ if (isset($_POST['delete_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -49,7 +50,7 @@ if (isset($_POST['delete_id'])) {
         }
     </script>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased font-sans">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 antialiased font-sans transition-colors duration-300">
     
     <?php include '../../layouts/sidebar.php'; ?>
 
@@ -57,18 +58,18 @@ if (isset($_POST['delete_id'])) {
     <div class="md:ml-64 min-h-screen flex flex-col">
         
         <!-- Header -->
-        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-colors">
             <button class="md:hidden p-2 text-gray-600 rounded-lg hover:bg-gray-100" onclick="toggleSidebar()">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
 
             <div class="flex-1 px-4">
-               <h1 class="text-lg font-semibold text-gray-800">Karyaku</h1>
+               <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Karyaku</h1>
             </div>
 
             <div class="relative group">
                 <button class="flex items-center gap-3 focus:outline-none">
-                    <span class="hidden md:block text-sm font-medium text-gray-700"><?php echo htmlspecialchars($_SESSION['name']); ?></span>
+                    <span class="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300"><?php echo htmlspecialchars($_SESSION['name']); ?></span>
                     <?php 
                         $sess_avatar = trim($_SESSION['avatar']);
                         if (stripos($sess_avatar, 'http') !== 0) {
@@ -78,8 +79,8 @@ if (isset($_POST['delete_id'])) {
                     <img src="<?php echo htmlspecialchars($sess_avatar); ?>" alt="Avatar" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
                 </button>
                 <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
-                    <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
-                        <a href="pengaturan.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <a href="pengaturan.php" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             Edit Profil
                         </a>
                         <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -94,7 +95,7 @@ if (isset($_POST['delete_id'])) {
         <main class="flex-1 p-6 lg:p-8">
             
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-900">Daftar Buku Saya</h2>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Daftar Buku Saya</h2>
                 <a href="tulis_cerita.php" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Tulis Baru
@@ -113,34 +114,34 @@ if (isset($_POST['delete_id'])) {
             $result = mysqli_query($koneksi, $query);
 
             if (mysqli_num_rows($result) > 0) : ?>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Cover</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Info Cerita</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Dilihat</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Status</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <?php while ($book = mysqli_fetch_assoc($result)) : ?>
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="w-12 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0 border border-gray-200">
-                                                <?php if ($book['cover_image']) : ?>
-                                                    <img src="../../<?php echo htmlspecialchars($book['cover_image']); ?>" class="w-full h-full object-cover" alt="Cover">
-                                                <?php else : ?>
-                                                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold">PDF</div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="max-w-md">
-                                                <div class="text-sm font-bold text-gray-900 mb-1"><?php echo htmlspecialchars($book['title']); ?></div>
-                                                <div class="text-xs text-gray-500 line-clamp-2"><?php echo htmlspecialchars($book['synopsis']); ?></div>
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-20">Cover</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Info Cerita</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-24">Dilihat</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-32">Status</th>
+                                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-40">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                        <?php while ($book = mysqli_fetch_assoc($result)) : ?>
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="w-12 h-16 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0 border border-gray-200 dark:border-gray-600">
+                                                        <?php if ($book['cover_image']) : ?>
+                                                            <img src="../../<?php echo htmlspecialchars($book['cover_image']); ?>" class="w-full h-full object-cover" alt="Cover">
+                                                        <?php else : ?>
+                                                            <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold">PDF</div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="max-w-md">
+                                                        <div class="text-sm font-bold text-gray-900 dark:text-white mb-1"><?php echo htmlspecialchars($book['title']); ?></div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2"><?php echo htmlspecialchars($book['synopsis']); ?></div>
                                                     <div class="flex flex-wrap gap-1 mt-1">
                                                         <?php 
                                                         $genres = explode(',', $book['genre']);
@@ -156,7 +157,7 @@ if (isset($_POST['delete_id'])) {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center text-gray-500 text-sm">
+                                            <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm">
                                                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                                 <span class="font-medium"><?php echo number_format($book['views'] ?? 0); ?></span>
                                             </div>
@@ -173,7 +174,7 @@ if (isset($_POST['delete_id'])) {
                                                 </a>
                                                 <form method="POST" class="inline delete-form-book" onsubmit="return confirmDeleteBook(event)">
                                                     <input type="hidden" name="delete_id" value="<?php echo $book['id']; ?>">
-                                                    <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors">
+                                                    <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 p-1.5 rounded-lg transition-colors">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                     </button>
                                                 </form>
@@ -186,10 +187,10 @@ if (isset($_POST['delete_id'])) {
                     </div>
                 </div>
             <?php else : ?>
-                <div class="text-center py-12 bg-white rounded-xl border border-gray-200 border-dashed">
-                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    <p class="text-gray-500 mb-4">Belum ada cerita yang ditulis.</p>
-                    <a href="tulis_cerita.php" class="text-emerald-600 font-medium hover:text-emerald-700">Mulai Menulis</a>
+                <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-dashed">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <p class="text-gray-500 dark:text-gray-400 mb-4">Belum ada cerita yang ditulis.</p>
+                    <a href="tulis_cerita.php" class="text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300">Mulai Menulis</a>
                 </div>
             <?php endif; ?>
         </main>

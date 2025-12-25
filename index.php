@@ -60,7 +60,7 @@ $continue_reading = null;
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
 
    <?php include 'layouts/navbar.php'; ?>
 

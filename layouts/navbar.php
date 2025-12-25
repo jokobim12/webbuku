@@ -172,6 +172,7 @@
     });
 </script>
 <script src="/assets/js/theme.js"></script>
+<script src="/assets/js/api/search.js"></script>
 
 
 <?php include 'confirmation_modal.php'; ?>

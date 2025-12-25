@@ -56,8 +56,16 @@ $comments_query = "SELECT comments.*, users.name as user_name, users.avatar as u
                    FROM comments 
                    JOIN users ON comments.user_id = users.id 
                    WHERE comments.book_id = '$book_id' 
-                   ORDER BY comments.created_at DESC";
+                   ORDER BY comments.created_at ASC"; // Order ASC for chronological conversation
 $result_comments = mysqli_query($koneksi, $comments_query);
+
+$comments_by_parent = [];
+$total_comments = 0;
+while ($row = mysqli_fetch_assoc($result_comments)) {
+    $pid = $row['parent_id'] ? $row['parent_id'] : 0;
+    $comments_by_parent[$pid][] = $row;
+    $total_comments++;
+}
 
 if (isset($_SESSION['user_id'])) {
     $current_user_id = $_SESSION['user_id'];
@@ -89,8 +97,10 @@ if (isset($_SESSION['user_id'])) {
     <title><?php echo htmlspecialchars($book['title']); ?> - WebBuku</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -115,7 +125,7 @@ if (isset($_SESSION['user_id'])) {
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
 
     <?php include '../../layouts/navbar.php'; ?>
 
@@ -138,9 +148,13 @@ if (isset($_SESSION['user_id'])) {
                 
                 <!-- Book Cover - Centered on mobile -->
                 <div class="flex-shrink-0">
-                    <div class="w-36 sm:w-44 lg:w-52 aspect-[4/5] rounded-lg overflow-hidden bg-gray-700 book-cover-shadow">
+                    <div id="coverContainer" class="w-36 sm:w-44 lg:w-52 aspect-[4/5] rounded-lg overflow-hidden bg-gray-700 book-cover-shadow animate-pulse relative">
                         <?php if($book['cover_image']): ?>
-                            <img src="../../<?php echo htmlspecialchars($book['cover_image']); ?>" alt="Cover" class="w-full h-full object-cover">
+                            <img src="../../<?php echo htmlspecialchars($book['cover_image']); ?>" 
+                                 alt="Cover" 
+                                 class="w-full h-full object-cover opacity-0 transition-opacity duration-700"
+                                 onload="this.classList.remove('opacity-0'); document.getElementById('coverContainer').classList.remove('animate-pulse');"
+                                 onerror="this.style.display='none'; document.getElementById('coverContainer').classList.remove('animate-pulse');">
                         <?php else: ?>
                             <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
                                 <svg class="w-10 h-10 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
@@ -167,12 +181,6 @@ if (isset($_SESSION['user_id'])) {
                     <!-- Title & Like -->
                     <div class="flex items-start justify-center sm:justify-start gap-3 mb-2">
                         <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight"><?php echo htmlspecialchars($book['title']); ?></h1>
-                        <button id="likeBtn" data-book-id="<?php echo $book_id; ?>" class="mt-1 flex-shrink-0 group relative">
-                            <i class="<?php echo $is_liked ? 'fa-solid text-pink-500' : 'fa-regular text-gray-400'; ?> fa-heart text-2xl sm:text-3xl transition-all duration-300 group-hover:scale-110"></i>
-                            <span id="likeCount" class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-300 font-medium whitespace-nowrap">
-                                <?php echo number_format($like_count); ?>
-                            </span>
-                        </button>
                     </div>
                     
                     <!-- Author -->
@@ -196,6 +204,10 @@ if (isset($_SESSION['user_id'])) {
                         <button id="bookmarkBtn" data-book-id="<?php echo $book_id; ?>" class="inline-flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm border border-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all">
                             <i class="<?php echo $is_bookmarked ? 'fa-solid text-emerald-400' : 'fa-regular'; ?> fa-bookmark"></i>
                             <span><?php echo $is_bookmarked ? 'Disimpan' : 'Simpan'; ?></span>
+                        </button>
+                        <button id="likeBtn" data-book-id="<?php echo $book_id; ?>" class="inline-flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm border border-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all group min-w-[3.5rem]">
+                            <i class="<?php echo $is_liked ? 'fa-solid text-red-500' : 'fa-regular'; ?> fa-heart text-xl group-hover:scale-110 transition-transform"></i>
+                            <span id="likeCount" class="text-sm"><?php echo number_format($like_count); ?></span>
                         </button>
                     </div>
                     <?php else: ?>
@@ -226,24 +238,24 @@ if (isset($_SESSION['user_id'])) {
                 
                 <!-- Synopsis -->
                 <section>
-                    <h2 class="text-lg font-bold text-gray-900 mb-3">Sinopsis</h2>
-                    <p class="text-gray-600 leading-relaxed whitespace-pre-line"><?php echo htmlspecialchars($book['synopsis']); ?></p>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Sinopsis</h2>
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line"><?php echo htmlspecialchars($book['synopsis']); ?></p>
                 </section>
 
                 <!-- Chapters List -->
                 <section>
-                    <h2 class="text-lg font-bold text-gray-900 mb-3">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
                         Daftar Bab
                         <span class="text-sm font-normal text-gray-400 ml-1">(<?php echo count($chapters); ?>)</span>
                     </h2>
-                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <?php if(count($chapters) > 0): ?>
-                            <div class="divide-y divide-gray-100">
+                            <div class="divide-y divide-gray-100 dark:divide-gray-700">
                             <?php $i = 1; foreach($chapters as $chap): ?>
-                            <a href="baca_cerita.php?book_id=<?php echo $book_id; ?>&chapter_id=<?php echo $chap['id']; ?>" class="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors group">
-                                <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 text-gray-500 font-medium text-sm flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors"><?php echo $i++; ?></span>
+                            <a href="baca_cerita.php?book_id=<?php echo $book_id; ?>&chapter_id=<?php echo $chap['id']; ?>" class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors"><?php echo $i++; ?></span>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="font-medium text-gray-800 group-hover:text-emerald-600 truncate transition-colors"><?php echo htmlspecialchars($chap['title']); ?></h4>
+                                    <h4 class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate transition-colors"><?php echo htmlspecialchars($chap['title']); ?></h4>
                                     <p class="text-xs text-gray-400 mt-0.5"><?php echo date('d M Y', strtotime($chap['created_at'])); ?></p>
                                 </div>
                                 <svg class="w-4 h-4 text-gray-300 group-hover:text-emerald-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -258,20 +270,177 @@ if (isset($_SESSION['user_id'])) {
                         <?php endif; ?>
                     </div>
                 </section>
+                
+                <!-- Comments Section -->
+                <section>
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">
+                        Komentar
+                        <span class="text-sm font-normal text-gray-400 ml-1">(<?php echo $total_comments; ?>)</span>
+                    </h2>
+
+                    <!-- Comment Form -->
+                    <?php if(isset($_SESSION['user_id'])): ?>
+                    <form id="commentForm" data-book-id="<?php echo $book_id; ?>" class="mb-8">
+                        <div class="flex gap-4">
+                            <?php 
+                                $avatar = !empty($_SESSION['avatar']) ? (strpos($_SESSION['avatar'], 'http') === 0 ? $_SESSION['avatar'] : '/' . ltrim($_SESSION['avatar'], '/')) : 'https://ui-avatars.com/api/?name='.urlencode($_SESSION['name']).'&background=random';
+                            ?>
+                            <img src="<?php echo $avatar; ?>" alt="Avatar" class="w-10 h-10 rounded-full border border-gray-100 object-cover flex-shrink-0">
+                            <div class="flex-1">
+                                <textarea class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none" rows="3" placeholder="Tulis komentar anda..."></textarea>
+                                <div class="flex justify-end mt-2">
+                                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg">Kirim</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <?php else: ?>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 text-center mb-8 border border-dashed border-gray-300 dark:border-gray-700">
+                        <p class="text-gray-500 dark:text-gray-400 mb-3">Login untuk ikut berdiskusi</p>
+                        <a href="../../auth/auth_google.php" class="inline-block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">masuk dengan Google</a>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Comments List -->
+                    <div id="commentsList" class="space-y-6">
+                        <?php 
+                        if (!empty($comments_by_parent[0])): 
+                            foreach ($comments_by_parent[0] as $parent): 
+                        ?>
+                            <!-- Parent Comment -->
+                            <div class="group" id="comment-<?php echo $parent['id']; ?>">
+                                <div class="flex gap-4">
+                                    <img src="<?php echo !empty($parent['user_avatar']) ? (strpos($parent['user_avatar'], 'http') === 0 ? $parent['user_avatar'] : '/' . ltrim($parent['user_avatar'], '/')) : 'https://ui-avatars.com/api/?name='.urlencode($parent['user_name']).'&background=random'; ?>" class="w-10 h-10 rounded-full object-cover border border-gray-100 dark:border-gray-700 flex-shrink-0">
+                                    <div class="flex-1">
+                                        <div class="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none p-4 border border-gray-100 dark:border-gray-700 shadow-sm relative group-hover:border-emerald-100 dark:group-hover:border-emerald-900 transition-colors">
+                                            
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                                    <span class="font-bold text-sm text-gray-900 dark:text-gray-100"><?php echo htmlspecialchars($parent['user_name']); ?></span>
+                                                    <span class="text-[10px] sm:text-xs text-gray-400"><?php echo date('d M, H:i', strtotime($parent['created_at'])); ?></span>
+                                                </div>
+
+                                                <!-- Actions (Edit/Delete) -->
+                                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <?php if(isset($_SESSION['user_id'])): ?>
+                                                        <?php if($_SESSION['user_id'] == $parent['user_id']): ?>
+                                                        <button onclick="toggleEdit(<?php echo $parent['id']; ?>)" class="text-gray-400 hover:text-emerald-600 p-1 transition-colors" title="Edit">
+                                                            <i class="fa-solid fa-pen text-xs"></i>
+                                                        </button>
+                                                        <button onclick="deleteComment(<?php echo $parent['id']; ?>)" class="text-gray-400 hover:text-red-500 p-1 transition-colors" title="Hapus">
+                                                            <i class="fa-solid fa-trash text-xs"></i>
+                                                        </button>
+                                                        <?php endif; ?>
+                                                        <button onclick="toggleReply(<?php echo $parent['id']; ?>)" class="text-emerald-600 hover:text-emerald-700 font-medium text-xs bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded transition-colors">
+                                                            Balas
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Content Display -->
+                                            <p id="content-<?php echo $parent['id']; ?>" class="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap leading-relaxed"><?php echo htmlspecialchars($parent['content']); ?></p>
+                                            
+                                            <!-- Edit Form (Hidden) -->
+                                            <div id="edit-form-<?php echo $parent['id']; ?>" class="hidden mt-2">
+                                                <textarea class="w-full text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2" rows="2"><?php echo htmlspecialchars($parent['content']); ?></textarea>
+                                                <div class="flex justify-end gap-2 mt-2">
+                                                    <button onclick="cancelEdit(<?php echo $parent['id']; ?>)" class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Batal</button>
+                                                    <button onclick="saveEdit(<?php echo $parent['id']; ?>)" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700">Simpan</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Reply Form (Hidden) -->
+                                        <div id="reply-form-<?php echo $parent['id']; ?>" class="hidden mt-3 ml-2">
+                                            <div class="flex gap-3">
+                                                <div class="flex-1">
+                                                    <textarea class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-3" rows="2" placeholder="Tulis balasan..."></textarea>
+                                                    <div class="flex justify-end gap-2 mt-2">
+                                                        <button onclick="toggleReply(<?php echo $parent['id']; ?>)" class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Batal</button>
+                                                        <button onclick="submitReply(<?php echo $parent['id']; ?>)" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700 shadow-sm">Kirim Balasan</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Child Comments (Replies) -->
+                                        <?php if (isset($comments_by_parent[$parent['id']])): ?>
+                                        <div class="mt-4 space-y-4 pl-4 border-l-2 border-gray-100 dark:border-gray-700 ml-4">
+                                            <?php foreach ($comments_by_parent[$parent['id']] as $child): ?>
+                                            <div class="group/child" id="comment-<?php echo $child['id']; ?>">
+                                                <div class="flex gap-3">
+                                                    <img src="<?php echo !empty($child['user_avatar']) ? (strpos($child['user_avatar'], 'http') === 0 ? $child['user_avatar'] : '/' . ltrim($child['user_avatar'], '/')) : 'https://ui-avatars.com/api/?name='.urlencode($child['user_name']).'&background=random'; ?>" class="w-8 h-8 rounded-full object-cover border border-gray-100 dark:border-gray-700 flex-shrink-0">
+                                                    <div class="flex-1">
+                                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl rounded-tl-none p-3 border border-gray-100 dark:border-gray-700 relative group-hover/child:bg-white dark:group-hover/child:bg-gray-800 group-hover/child:shadow-sm transition-all">
+                                                            
+                                                            <div class="flex items-start justify-between mb-1">
+                                                                <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                                                    <span class="font-bold text-xs text-gray-900 dark:text-gray-200"><?php echo htmlspecialchars($child['user_name']); ?></span>
+                                                                    <span class="text-[10px] text-gray-400"><?php echo date('d M, H:i', strtotime($child['created_at'])); ?></span>
+                                                                </div>
+
+                                                                <!-- Child Actions -->
+                                                                <div class="flex gap-2 opacity-0 group-hover/child:opacity-100 transition-opacity">
+                                                                    <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $child['user_id']): ?>
+                                                                    <button onclick="toggleEdit(<?php echo $child['id']; ?>)" class="text-gray-400 hover:text-emerald-600 p-1 transition-colors" title="Edit">
+                                                                        <i class="fa-solid fa-pen text-[10px]"></i>
+                                                                    </button>
+                                                                    <button onclick="deleteComment(<?php echo $child['id']; ?>)" class="text-gray-400 hover:text-red-500 p-1 transition-colors" title="Hapus">
+                                                                        <i class="fa-solid fa-trash text-[10px]"></i>
+                                                                    </button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <p id="content-<?php echo $child['id']; ?>" class="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-wrap"><?php echo htmlspecialchars($child['content']); ?></p>
+                                                            
+                                                            <!-- Child Edit Form -->
+                                                            <div id="edit-form-<?php echo $child['id']; ?>" class="hidden mt-2">
+                                                                <textarea class="w-full text-sm bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 dark:text-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2" rows="2"><?php echo htmlspecialchars($child['content']); ?></textarea>
+                                                                <div class="flex justify-end gap-2 mt-2">
+                                                                    <button onclick="cancelEdit(<?php echo $child['id']; ?>)" class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">Batal</button>
+                                                                    <button onclick="saveEdit(<?php echo $child['id']; ?>)" class="text-xs bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700">Simpan</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <?php endif; ?>
+
+                                    </div>
+                                </div>
+                            </div>
+                        <?php 
+                            endforeach;
+                        else: 
+                        ?>
+                            <div class="text-center py-8">
+                                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 text-gray-400 mb-3">
+                                    <i class="fa-regular fa-comments text-xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm">Belum ada komentar. Jadilah yang pertama!</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </section>
             </div>
 
             <!-- Sidebar -->
             <div class="space-y-6">
                 
                 <!-- Author Card -->
-                <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 text-center">
                     <a href="profile.php?id=<?php echo $book['user_id']; ?>" class="block hover:opacity-80 transition-opacity">
-                        <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($book['author_name']); ?>&background=059669&color=fff&size=80" alt="Author" class="w-16 h-16 rounded-full mx-auto mb-3">
-                        <h4 class="font-bold text-gray-900"><?php echo htmlspecialchars($book['author_name']); ?></h4>
+                        <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($book['author_name']); ?>&background=059669&color=fff&size=80" alt="Author" class="w-16 h-16 rounded-full mx-auto mb-3 border-4 border-emerald-50 dark:border-emerald-900">
+                        <h4 class="font-bold text-gray-900 dark:text-white"><?php echo htmlspecialchars($book['author_name']); ?></h4>
                     </a>
-                    <p class="text-sm text-gray-500 mb-2">Penulis</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Penulis</p>
                     <?php if (!empty($book['author_bio'])): ?>
-                        <p class="text-xs text-gray-600 mb-4 px-2 italic line-clamp-3">"<?php echo htmlspecialchars($book['author_bio']); ?>"</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-4 px-2 italic line-clamp-3">"<?php echo htmlspecialchars($book['author_bio']); ?>"</p>
                     <?php else: ?>
                         <p class="text-xs text-gray-400 mb-4 italic">Belum ada bio</p>
                     <?php endif; ?>
@@ -292,9 +461,9 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <!-- Share Card -->
-                <div class="bg-white rounded-xl border border-gray-200 p-5">
-                    <h4 class="font-bold text-gray-900 mb-3 text-sm">Bagikan</h4>
-                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link berhasil disalin!');" class="w-full py-2 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                    <h4 class="font-bold text-gray-900 dark:text-white mb-3 text-sm">Bagikan</h4>
+                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link berhasil disalin!');" class="w-full py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         Salin Link
                     </button>
@@ -310,33 +479,29 @@ if (isset($_SESSION['user_id'])) {
         if (followBtn) {
             followBtn.addEventListener('click', function() {
                 const authorId = this.getAttribute('data-author-id');
+                const text = this;
                 
-                // Optimistic UI Update (optional, but good for UX)
-                // For now, let's wait for server response to be sure
-                
-                const formData = new FormData();
-                formData.append('following_id', authorId);
-
-                fetch('process_follow.php', {
+                fetch('../../api/follow.php', {
                     method: 'POST',
-                    body: formData
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({following_id: authorId})
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
+                    if (data.status === 'success') {
                         if (data.is_following) {
                             // Changed to Following
-                            followBtn.textContent = 'Mengikuti';
-                            followBtn.className = 'w-full py-2 rounded-lg border-2 transition-colors font-semibold text-sm bg-gray-100 border-gray-100 text-gray-600 hover:bg-gray-200 hover:border-gray-200';
+                            text.textContent = 'Mengikuti';
+                            text.className = 'w-full py-2 rounded-lg border-2 transition-colors font-semibold text-sm bg-gray-100 border-gray-100 text-gray-600 hover:bg-gray-200 hover:border-gray-200';
                         } else {
                             // Changed to Not Following
-                            followBtn.textContent = 'Ikuti Penulis';
-                            followBtn.className = 'w-full py-2 rounded-lg border-2 transition-colors font-semibold text-sm border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white';
+                            text.textContent = 'Ikuti Penulis';
+                            text.className = 'w-full py-2 rounded-lg border-2 transition-colors font-semibold text-sm border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white';
                         }
                     } else {
-                        if (data.message.includes('login')) {
+                        if (data.message.includes('login') || data.message === 'Unauthorized') {
                             alert('Silakan login untuk mengikuti penulis.');
-                            window.location.href = '../../auth/login.php'; 
+                            window.location.href = '../../auth/auth_google.php'; 
                         } else {
                             alert(data.message);
                         }
@@ -388,17 +553,14 @@ if (isset($_SESSION['user_id'])) {
             likeBtn.addEventListener('click', function() {
                 const bookId = this.getAttribute('data-book-id');
                 const icon = this.querySelector('i');
-
                 // Optimistic UI
                 const isLiked = icon.classList.contains('fa-solid');
                 if(isLiked) {
-                    icon.classList.remove('fa-solid', 'text-pink-500');
-                    icon.classList.add('fa-regular', 'text-gray-400');
-                    // likeCount.textContent = parseInt(likeCount.textContent.replace(/,/g, '')) - 1; // Simplify not updating count optimistically
+                    icon.classList.remove('fa-solid', 'text-red-500');
+                    icon.classList.add('fa-regular');
                 } else {
-                    icon.classList.remove('fa-regular', 'text-gray-400');
-                    icon.classList.add('fa-solid', 'text-pink-500');
-                    // likeCount.textContent = parseInt(likeCount.textContent.replace(/,/g, '')) + 1;
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid', 'text-red-500');
                 }
 
                 fetch('../../api/like.php', {
@@ -409,13 +571,15 @@ if (isset($_SESSION['user_id'])) {
                 .then(res => res.json())
                 .then(data => {
                     if(data.status === 'success') {
-                        likeCount.textContent = data.likes;
+                        if(likeCount) likeCount.textContent = data.likes;
+                        
+                        // Sync UI with actual server state
                         if(data.action === 'liked') {
-                            icon.classList.remove('fa-regular', 'text-gray-400');
-                            icon.classList.add('fa-solid', 'text-pink-500');
+                            icon.classList.remove('fa-regular');
+                            icon.classList.add('fa-solid', 'text-red-500');
                         } else {
-                             icon.classList.remove('fa-solid', 'text-pink-500');
-                            icon.classList.add('fa-regular', 'text-gray-400');
+                             icon.classList.remove('fa-solid', 'text-red-500');
+                             icon.classList.add('fa-regular');
                         }
                     } else if(data.message === 'Unauthorized') {
                          window.location.href = '../../auth/auth_google.php';
@@ -444,27 +608,119 @@ if (isset($_SESSION['user_id'])) {
                 .then(res => res.json())
                 .then(data => {
                     if(data.status === 'success') {
-                        const c = data.comment;
-                        const html = `
-                            <div class="flex gap-4">
-                                <img src="${c.avatar}" class="w-10 h-10 rounded-full object-cover border border-gray-100">
-                                <div class="flex-1">
-                                    <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl rounded-tl-none p-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="font-bold text-sm text-gray-900 dark:text-gray-100">${c.user_name}</span>
-                                            <span class="text-xs text-gray-500">Baru saja</span>
-                                        </div>
-                                        <p class="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">${c.content}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        commentsList.insertAdjacentHTML('afterbegin', html);
-                        this.reset();
+                        location.reload(); // Reload to show new comment in correct threaded order (simplest for now)
                     } else if(data.message === 'Unauthorized') {
                         window.location.href = '../../auth/auth_google.php';
                     }
                 });
+            });
+        }
+
+        // Toggle Reply Form
+        function toggleReply(id) {
+            const form = document.getElementById(`reply-form-${id}`);
+            if(form) form.classList.toggle('hidden');
+        }
+
+        // Toggle Edit Form
+        function toggleEdit(id) {
+            const content = document.getElementById(`content-${id}`);
+            const form = document.getElementById(`edit-form-${id}`);
+            
+            if (form && content) {
+                if (form.classList.contains('hidden')) {
+                    form.classList.remove('hidden');
+                    content.classList.add('hidden');
+                } else {
+                    form.classList.add('hidden');
+                    content.classList.remove('hidden');
+                }
+            }
+        }
+        
+        function cancelEdit(id) {
+             const content = document.getElementById(`content-${id}`);
+             const form = document.getElementById(`edit-form-${id}`);
+             if(form && content) {
+                 form.classList.add('hidden');
+                 content.classList.remove('hidden');
+             }
+        }
+
+        // Submit Reply
+        function submitReply(parentId) {
+            const formContainer = document.getElementById(`reply-form-${parentId}`);
+            const textarea = formContainer.querySelector('textarea');
+            const content = textarea.value;
+            const bookId = <?php echo $book_id; ?>;
+
+            if(!content.trim()) return;
+
+            fetch('../../api/comment.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    book_id: bookId, 
+                    content: content, 
+                    parent_id: parentId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    location.reload(); 
+                } else {
+                    alert(data.message || 'Gagal membalas komentar');
+                }
+            });
+        }
+
+        // Save Edit
+        function saveEdit(commentId) {
+            const formContainer = document.getElementById(`edit-form-${commentId}`);
+            const textarea = formContainer.querySelector('textarea');
+            const content = textarea.value;
+
+            if(!content.trim()) return;
+
+            fetch('../../api/comment.php', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    comment_id: commentId, 
+                    content: content
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    const contentP = document.getElementById(`content-${commentId}`);
+                    contentP.textContent = content;
+                    toggleEdit(commentId);
+                } else {
+                     alert(data.message || 'Gagal mengupdate komentar');
+                }
+            });
+        }
+
+        // Delete Comment
+        function deleteComment(id) {
+            if(!confirm('Yakin ingin menghapus komentar ini?')) return;
+
+            fetch('../../api/comment.php', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({comment_id: id})
+            })
+            .then(res => res.json())
+            .then(data => {
+                 if(data.status === 'success') {
+                     const el = document.getElementById(`comment-${id}`);
+                     if(el) el.remove();
+                     location.reload(); // Reload to handle removed children if any
+                 } else {
+                     alert(data.message || 'Gagal menghapus komentar');
+                 }
             });
         }
 
