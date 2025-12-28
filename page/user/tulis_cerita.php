@@ -165,24 +165,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Main Content -->
     <div class="md:ml-64 min-h-screen flex flex-col">
         
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+       <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-colors">
             <button class="md:hidden p-2 text-gray-600 rounded-lg hover:bg-gray-100" onclick="toggleSidebar()">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
 
             <div class="flex-1 px-4">
-               <h1 class="text-lg font-semibold text-gray-800"><?php echo $is_edit ? 'Edit Info Cerita' : 'Detail Cerita'; ?></h1>
+               <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Karyaku</h1>
             </div>
 
-            <!-- Profile Dropdown -->
             <div class="relative group">
                 <button class="flex items-center gap-3 focus:outline-none">
-                    <span class="hidden md:block text-sm font-medium text-gray-700"><?php echo htmlspecialchars($_SESSION['name']); ?></span>
-                    <img src="<?php echo htmlspecialchars($_SESSION['avatar']); ?>" alt="Avatar" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
+                    <span class="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300"><?php echo htmlspecialchars($_SESSION['name']); ?></span>
+                    <?php 
+                        $sess_avatar = trim($_SESSION['avatar']);
+                        if (stripos($sess_avatar, 'http') !== 0) {
+                            $sess_avatar = '../../' . $sess_avatar;
+                        }
+                    ?>
+                    <img src="<?php echo htmlspecialchars($sess_avatar); ?>" alt="Avatar" referrerpolicy="no-referrer" class="w-9 h-9 rounded-full border border-gray-200 object-cover">
                 </button>
                 <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
-                    <div class="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <a href="pengaturan.php" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            Edit Profil
+                        </a>
                         <a href="../../auth/logout.php" onclick="confirmLogout(event, this.href)" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                             Keluar
                         </a>
