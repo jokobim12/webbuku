@@ -1,7 +1,7 @@
 <?php
     $host = "localhost";
     $user = "root";
-    $pass = "1234";
+    $pass = "";
     $db = "webbuku";
     
     $koneksi = mysqli_connect($host, $user, $pass, $db);
