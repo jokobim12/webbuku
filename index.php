@@ -32,6 +32,7 @@ $continue_reading = null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebBuku - Buat Cerita Impianmu</title>
+    <link rel="icon" href="assets/logo.jpg" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -59,6 +60,9 @@ $continue_reading = null;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
     </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg">
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
 
@@ -116,14 +120,14 @@ $continue_reading = null;
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <span class="text-emerald-600 font-semibold tracking-wide uppercase text-sm">Sedang Hangat</span>
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Buku Paling Populer Minggu Ini <i class="fa-solid fa-fire text-orange-500 ml-2"></i></h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Buku Paling Populer Minggu Ini</h2>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                 <?php while($book = mysqli_fetch_assoc($result_popular)): ?>
                 <!-- Book Card -->
-                <div class="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
-                    <div class="relative h-40 md:h-64 bg-gray-200 overflow-hidden">
+                <div class="group bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+                    <div class="relative h-40 md:h-64 rounded overflow-hidden p-3">
                         <?php if($book['cover_image']): ?>
                         <img src="<?php echo htmlspecialchars($book['cover_image']); ?>" alt="Cover" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         <?php else: ?>
@@ -293,5 +297,6 @@ $continue_reading = null;
         </div>
     </section>
     <?php include 'layouts/footer.php'; ?>  
+    <script src="assets/js/pwa.js"></script>
 </body>
 </html>
