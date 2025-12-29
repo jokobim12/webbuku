@@ -51,7 +51,7 @@
                         </span>
                     </button>
                     <!-- Dropdown -->
-                    <div id="notif-dropdown" class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 hidden z-50 overflow-hidden">
+                    <div id="notif-dropdown" class="fixed sm:absolute top-20 sm:top-auto right-4 sm:right-0 left-4 sm:left-auto mt-2 sm:mt-2 w-[calc(100%-2rem)] sm:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 hidden z-[80] overflow-hidden">
                         <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                             <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Notifikasi</h3>
                             <button id="mark-read-btn" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium hidden">Tandai sudah dibaca</button>
